@@ -1,3 +1,4 @@
+# -*- coding: UTF-8 -*-
 '''
 IMPLEMENTATION OF SIMPLIFIED BLACKJACK FOR COMPLETE PYTHON BOOTCAMP
 AUTHOR: DANIEL CLEMES KÜLKAMP
@@ -153,12 +154,36 @@ class BlackJackHand(Deck):
         '''
         return "["+self.show()+"]"
 
-class Player():
+class BasePlayer():
+    '''
+    Base class for blackjack player
+    '''
+    def __init__(self):
+        '''
+        Base constructor. Initializes an empty hand
+        '''
+        self.hand = BlackJackHand()
+
+    def hit_me(self, deck):
+        '''
+        draws a card from a deck and updates hand
+        parameters: deck -> deck from which player draws a card
+        '''
+        self.hand.add(deck.draw_card())
+
+    def show_status(self):
+        '''
+        subclasses must implement...
+
+        '''
+        print(f'Hand: {self.hand.show()}')
+
+class HumanPlayer(BasePlayer):
     '''
     Black jack player.
     Has a balance and a Hand
     '''
-    def __init__(self, balance=100, deck=None):
+    def __init__(self, balance=100):
         '''
         constructor for player.
         Initializes balance and Hand with first two cards
@@ -166,22 +191,17 @@ class Player():
             balance -> inicial balance
             deck -> deck from which cards are drawn
         '''
+        BasePlayer.__init__(self)
         self.balance = balance
-        self.hand = BlackJackHand()
-        if deck:
-            self.draw_two(deck)
-        print(f'Player initialized with balance: {self.balance} and hand {self.hand}')
-
+        print(f'Human Player Initialized with hand {self.hand} and balance {self.balance}')
 
     def draw_two(self, deck):
         '''
         draws the first two cards of a blackjack game.
         upddates hand
-
         '''
         self.hand.add(deck.draw_card())
         self.hand.add(deck.draw_card())
-
 
     def place_bet(self, value):
         '''
@@ -195,27 +215,19 @@ class Player():
             return value
         raise ValueError('Not enough funds')
 
-    def hit_me(self, deck):
-        '''
-        draws a card from a deck and updates hand
-        parameters: deck -> deck from which player draws a card
-        '''
-        self.hand.add(deck.draw_card())
 
-class Dealer(Player):
+class Dealer(BasePlayer):
     '''
     Black Jack dealer
     '''
-    def __init__(self, deck):
+    def __init__(self):
         '''
         Constructor for blackjack dealer.
-        parameters: 
-            deck
+        parameters:
+            none
         '''
-        self.hand = BlackJackHand()
-        self.hand.add(deck.draw_card())
-        print(f'Dealers Hand: {self.hand}')
-
+        BasePlayer.__init__(self)
+        print(f'Dealer initialized!')
 
 class BlackJackGame():
     '''
@@ -223,22 +235,45 @@ class BlackJackGame():
     '''
     def __init__(self):
         '''
-        creates the game objects
+        creates the game objects and prints initial instructions
         '''
         self.deck = Deck(jokers=0)
         self.deck.shuffle()
         #prints instructions:
         print('Welcome to blackjack!')
         self.player = None
+        self.current_bet = 0
         while not self.player:
             try:
                 bal = int(input('Enter your initial amount of coins: '))
-                self.player = Player(bal, self.deck)
-            except:
-                pass
-        self.dealer = Dealer(self.deck)
+                self.player = HumanPlayer(bal)
+            except ValueError as exception:
+                print(exception)
+        self.dealer = Dealer()
+        self.player.draw_two(self.deck)
+
+    def player_turn(self):
+        '''
+        Show current hand and asks for 'hit me ('h' or
+        '''
+        try:
+            self.current_bet = int(input('Enter your bet'))
+        except ValueError:
+            return
+        try:
+            action = input('Hit me (h) or stop (s)')
+            while action not in ['h', 's']:
+                action = input('Hit me (h) or stop (s)')
+        except ValueError as exception:
+            print(exception)
+        print(f"action ={action}")
+
+    def dealer_turn(self):
+        '''
+        Dealer Turn. Draws cards until win or bust.
+        '''
+        print("dummy method for dealer_turn")
 
 if __name__ == '__main__':
     game = BlackJackGame()
-
         
