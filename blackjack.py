@@ -250,8 +250,6 @@ class BlackJackGame():
         '''
         creates the game objects and prints initial instructions
         '''
-        self.deck = Deck(jokers=0)
-        self.deck.shuffle()
         #prints instructions:
         print('Welcome to blackjack!')
         self.player = None
@@ -263,26 +261,77 @@ class BlackJackGame():
             except ValueError as exception:
                 print(exception)
         self.dealer = Dealer()
+        
+    def human_win(self):
+        self.player.balance += 2*self.current_bet
+        print(f'You won that one!\nYour current balance is {self.player.balance}')
+        self.get_another_one()
+
+    def human_lose(self):
+        print(f'Youo lost that one!\nYour current balance is {self.player.balance}')
+        self.get_another_one()
+
+
+    def get_another_one(self):
+        selected = ''
+        while selected not in ['y', 'n']:
+            try:
+                selected = input('Wanna play another one? ( y/n)')
+            except ValueError:
+                self.get_another_one()
+        if selected == 'y':
+            self.play_round()
+        print("Good bye, then!")
+
+
+
+    def play_round(self):
+        self.deck = Deck(jokers=0)
+        self.deck.shuffle()
+        self.dealer.clear_hand()
+        self.player.clear_hand()
         self.dealer.hit_me(self.deck)
         self.dealer.show_status()
         self.player.draw_two(self.deck)
         self.player.show_status()
+        self.set_current_bet()
+        self.player_turn()
+        if self.player.hand.total == 21:
+            self.human_win()
+        if self.player.hand.total > 21:
+            self.human_lose()
+            
+
+    def set_current_bet(self):
+        '''
+        Ask player to input the current bet
+        '''
+        try:
+            self.current_bet = self.player.place_bet(int(input('Enter your bet: ')))
+        except ValueError:
+            print("Either you entered a wrong value or you don't have that much...")
+            self.set_current_bet()
+            return
 
     def player_turn(self):
         '''
         Show current hand and asks for 'hit me ('h' or
         '''
-        try:
-            self.current_bet = int(input('Enter your bet'))
-        except ValueError:
-            return
-        try:
-            action = input('Hit me (h) or stop (s)')
-            while action not in ['h', 's']:
+        while True:
+            try:
                 action = input('Hit me (h) or stop (s)')
-        except ValueError as exception:
-            print(exception)
-        print(f"action ={action}")
+                while action not in ['h', 's']:
+                    action = input('Hit me (h) or stop (s)')
+            except ValueError as exception:
+                print(exception)
+            if action == 'h':
+                self.player.hit_me(self.deck)
+                self.player.show_status()
+                if self.player.hand.total >= 21:
+                    return
+            else:
+                return
+
 
     def dealer_turn(self):
         '''
@@ -292,4 +341,5 @@ class BlackJackGame():
 
 if __name__ == '__main__':
     game = BlackJackGame()
-        
+    while True:
+        game.play_round()
