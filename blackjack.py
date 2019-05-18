@@ -144,7 +144,7 @@ class BlackJackHand(Deck):
         '''
         hand_text = ""
         for card in self.cards:
-            hand_text += str(card)
+            hand_text += str(card) + " "
         hand_text += f' - Total: {self.total}'
         return hand_text
 
@@ -177,6 +177,12 @@ class BasePlayer():
 
         '''
         print(f'Hand: {self.hand.show()}')
+
+    def clear_hand(self):
+        '''
+        clears by setting self.hand to a new empty blackjackhand
+        '''
+        self.hand = BlackJackHand()
 
 class HumanPlayer(BasePlayer):
     '''
@@ -229,6 +235,13 @@ class Dealer(BasePlayer):
         BasePlayer.__init__(self)
         print(f'Dealer initialized!')
 
+    def show_status(self):
+        '''
+        Prints dealer hand.
+        '''
+        print('Dealer hand: ')
+        BasePlayer.show_status(self)
+
 class BlackJackGame():
     '''
     Main class for Blackjack game
@@ -250,7 +263,10 @@ class BlackJackGame():
             except ValueError as exception:
                 print(exception)
         self.dealer = Dealer()
+        self.dealer.hit_me(self.deck)
+        self.dealer.show_status()
         self.player.draw_two(self.deck)
+        self.player.show_status()
 
     def player_turn(self):
         '''
