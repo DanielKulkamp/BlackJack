@@ -239,7 +239,7 @@ class Dealer(BasePlayer):
         '''
         Prints dealer hand.
         '''
-        print('Dealer hand: ')
+        print('Dealer ', end="")
         BasePlayer.show_status(self)
 
 class BlackJackGame():
@@ -253,6 +253,7 @@ class BlackJackGame():
         #prints instructions:
         print('Welcome to blackjack!')
         self.player = None
+        self.deck = None
         self.current_bet = 0
         while not self.player:
             try:
@@ -261,31 +262,32 @@ class BlackJackGame():
             except ValueError as exception:
                 print(exception)
         self.dealer = Dealer()
-        
+
     def human_win(self):
+        '''Pays rewards for winning. ask for another round'''
         self.player.balance += 2*self.current_bet
         print(f'You won that one!\nYour current balance is {self.player.balance}')
-        self.get_another_one()
+
 
     def human_lose(self):
-        print(f'Youo lost that one!\nYour current balance is {self.player.balance}')
-        self.get_another_one()
+        '''Updates balance.'''
+        print(f'You lost that one!\nYour current balance is {self.player.balance}')
 
 
     def get_another_one(self):
+        '''ask for another round. if so, play it'''
         selected = ''
         while selected not in ['y', 'n']:
             try:
-                selected = input('Wanna play another one? ( y/n)')
-            except ValueError:
+                selected = input('Wanna play another one? (y/n): ')
+            except ValueError as error:
+                print(f"Value Error {error}")
                 self.get_another_one()
-        if selected == 'y':
-            self.play_round()
-        print("Good bye, then!")
-
+        return selected == 'y'
 
 
     def play_round(self):
+        '''Plays one round of blackjack'''
         self.deck = Deck(jokers=0)
         self.deck.shuffle()
         self.dealer.clear_hand()
@@ -298,9 +300,12 @@ class BlackJackGame():
         self.player_turn()
         if self.player.hand.total == 21:
             self.human_win()
+            return
         if self.player.hand.total > 21:
             self.human_lose()
-            
+            return
+        self.dealer_turn()
+
 
     def set_current_bet(self):
         '''
@@ -337,9 +342,21 @@ class BlackJackGame():
         '''
         Dealer Turn. Draws cards until win or bust.
         '''
-        print("dummy method for dealer_turn")
+        print("Now it is the dealer turn")
+        while self.dealer.hand.total < self.player.hand.total:
+            self.dealer.hit_me(self.deck)
+            self.dealer.show_status()
+        if self.dealer.hand.total <= 21:
+            self.human_lose()
+        else:
+            self.human_win()
 
 if __name__ == '__main__':
-    game = BlackJackGame()
+
+    GAME = BlackJackGame()
     while True:
-        game.play_round()
+        GAME.play_round()
+        if not GAME.get_another_one():
+            print("Good bye, then!")
+            break
+        print("Lets go!")
