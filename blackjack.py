@@ -142,10 +142,13 @@ class BlackJackHand(Deck):
         prints the cards in the hand and the total value
         ex: "A♣, 10♠ - Total: 21
         '''
-        hand_text = ""
-        for card in self.cards:
-            hand_text += str(card) + " "
-        hand_text += f' - Total: {self.total}'
+        hand_text = "[ " 
+        if len(self.cards) > 0:
+            hand_text += str(self.cards[0])
+        if len(self.cards) > 1:
+            for card in self.cards[1:]:
+                hand_text += ", " +str(card)
+        hand_text += f' ] - Total: {self.total}'
         return hand_text
 
     def __str__(self):
@@ -324,11 +327,13 @@ class BlackJackGame():
         '''
         while True:
             try:
-                action = input('Hit me (h) or stop (s)')
-                while action not in ['h', 's']:
-                    action = input('Hit me (h) or stop (s)')
+                action = input('Hit me (h) or stop (s): ')
+                
             except ValueError as exception:
                 print(exception)
+            finally: 
+                if action not in ['h', 's']:
+                    continue
             if action == 'h':
                 self.player.hit_me(self.deck)
                 self.player.show_status()
@@ -356,6 +361,9 @@ if __name__ == '__main__':
     GAME = BlackJackGame()
     while True:
         GAME.play_round()
+        if GAME.player.balance < 1:
+            print("Guards take this worthless beggar out of my casino!")
+            break
         if not GAME.get_another_one():
             print("Good bye, then!")
             break
